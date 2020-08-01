@@ -84,6 +84,7 @@ async function getUserById(userId) {
     }
 }
 
+
 /**
  * POST Methods
  */
@@ -247,6 +248,8 @@ async function getPostsByTagName(tagName) {
  * TAG Methods
  */
 
+
+
 async function createTags(tagList) {
     if (tagList.length === 0) {
         return;
@@ -320,6 +323,20 @@ async function getAllTags() {
     }
 }
 
+async function getUserByUsername(username) {
+    try {
+        const { rows: [user] } = await client.query(`
+        SELECT *
+        FROM users
+        WHERE username=$1
+      `, [username]);
+
+        return user;
+    } catch (error) {
+        throw error;
+    }
+}
+
 
 module.exports = {
     client,
@@ -335,5 +352,6 @@ module.exports = {
     createTags,
     getAllTags,
     createPostTag,
-    addTagsToPost
+    addTagsToPost,
+    getUserByUsername
 }
