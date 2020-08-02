@@ -7,7 +7,8 @@ tagsRouter.use((req, res, next) => {
     next();
 });
 
-const { getAllTags } = require('../db');
+
+const { getAllTags, getPostsByTagName } = require('../db');
 
 tagsRouter.get('/', async (req, res) => {
     const tags = await getAllTags();
@@ -16,5 +17,23 @@ tagsRouter.get('/', async (req, res) => {
         tags
     });
 });
+
+tagsRouter.get('/:tagName/posts', async (req, res, next) => {
+    try {
+        const { tagName } = req.params;
+        const taggedPosts = await getPostsByTagName(tagName);
+
+        const posts = taggedPosts.filter(post => { //filters active/inactive posts by tag
+            return post.active || (req.user && post.author.id === req.user.id);
+        });
+
+        res.send({ posts });
+    } catch ({ name, message }) {
+        next({
+            name: 'TagNameError',
+            message: `Error computing tag.`
+        });
+    }
+})
 
 module.exports = tagsRouter;

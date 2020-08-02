@@ -59,4 +59,4 @@ apiRouter.use((error, req, res, next) => {
 
 
 
-module.exports = apiRouter, postsRouter, tagsRouter;
+module.exports = apiRouter, usersRouter, postsRouter, tagsRouter;
