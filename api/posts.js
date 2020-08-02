@@ -1,7 +1,10 @@
 const express = require('express');
 const postsRouter = express.Router();
+//sets up router for express
 
 const { requireUser } = require('./utils');
+
+//list checked by the bouncer to get into the club
 const { getPostById, updatePost, getAllPosts, createPost } = require('../db');
 
 postsRouter.use((req, res, next) => {
@@ -10,10 +13,10 @@ postsRouter.use((req, res, next) => {
     next();
 });
 
-
+//breaks tags string into separate tags
 postsRouter.post('/', requireUser, async (req, res, next) => {
     const { title, content, tags = "" } = req.body;
-
+    // TagArr removes any spaces in the front or back, and then split will turn the string into an array, splitting over any number of spaces
     const tagArr = tags.trim().split(/\s+/)
     const postData = {};
 
@@ -37,8 +40,6 @@ postsRouter.post('/', requireUser, async (req, res, next) => {
                 message: 'There was an error while trying to create this post. Please try again.'
             })
         }
-        // add authorId, title, content to postData object
-        // const post = await createPost(postData);
         // this will create the post and the tags for us
         // if the post comes back, res.send({ post });
         // otherwise, next an appropriate error object 
@@ -47,6 +48,7 @@ postsRouter.post('/', requireUser, async (req, res, next) => {
     }
 });
 
+//sets a route to read the param from the request
 postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
     const { postId } = req.params;
     const { title, content, tags } = req.body;
@@ -67,7 +69,7 @@ postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
 
     try {
         const originalPost = await getPostById(postId);
-
+        //makes sure the post being updated belongs to the user doing the updating
         if (originalPost.author.id === req.user.id) {
             const updatedPost = await updatePost(postId, updateFields);
             res.send({ post: updatedPost })
@@ -82,7 +84,7 @@ postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
     }
 });
 
-
+//sets route for reading all posts
 postsRouter.get('/', async (req, res) => {
     const posts = await getAllPosts();
 
@@ -94,7 +96,7 @@ postsRouter.get('/', async (req, res) => {
 postsRouter.get('/', async (req, res) => {
     try {
         const allPosts = await getAllPosts();
-
+        //filters out active/inactive posts
         const posts = allPosts.filter(post => {
             return post.active || (req.user && post.author.id === req.user.id);
         });
@@ -107,7 +109,7 @@ postsRouter.get('/', async (req, res) => {
     }
 });
 
-
+//updates a post to have active: false
 postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
     try {
         const post = await getPostById(req.params.postId);
@@ -132,4 +134,5 @@ postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
     }
 });
 
+//bouncer at the club that checks the guest list
 module.exports = postsRouter;

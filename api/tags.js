@@ -10,6 +10,7 @@ tagsRouter.use((req, res, next) => {
 
 const { getAllTags, getPostsByTagName } = require('../db');
 
+//sets route for reading tags
 tagsRouter.get('/', async (req, res) => {
     const tags = await getAllTags();
 

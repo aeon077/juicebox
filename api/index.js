@@ -13,12 +13,12 @@ apiRouter.use(async (req, res, next) => {
 
     if (!auth) { // nothing to see here
         next();
-    } else if (auth.startsWith(prefix)) {
+    } else if (auth.startsWith(prefix)) { //if auth set starts with Bearer, it adds token
         const token = auth.slice(prefix.length);
 
         try {
             const { id } = jwt.verify(token, JWT_SECRET);
-
+            //reads and decrypts token, verifies, and reads user data from database
             if (id) {
                 req.user = await getUserById(id);
                 next();
@@ -26,7 +26,7 @@ apiRouter.use(async (req, res, next) => {
         } catch ({ name, message }) {
             next({ name, message });
         }
-    } else {
+    } else { //or it will throw and error with a name and message
         next({
             name: 'AuthorizationHeaderError',
             message: `Authorization token must start with ${prefix}`
@@ -42,6 +42,7 @@ apiRouter.use((req, res, next) => {
     next();
 });
 
+//sets routes for users, posts and tags, plus error
 const usersRouter = require('./users');
 apiRouter.use('/users', usersRouter);
 

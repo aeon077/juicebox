@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const usersRouter = express.Router();
+//creates router for express to be reused
 
 usersRouter.use((req, res, next) => {
     console.log("A request is being made to /users");
@@ -8,8 +9,8 @@ usersRouter.use((req, res, next) => {
     next();
 });
 
+//names that can get into the club, checked by the bouncer
 const { getAllUsers, getUserByUsername, createUser } = require('../db');
-const { JsonWebTokenError } = require('jsonwebtoken');
 
 usersRouter.get('/', async (req, res) => {
     const users = await getAllUsers();
@@ -20,7 +21,7 @@ usersRouter.get('/', async (req, res) => {
 });
 
 
-
+//route for verifying username and password
 usersRouter.post('/login', async (req, res, next) => {
     const { username, password } = req.body;
 
@@ -36,7 +37,7 @@ usersRouter.post('/login', async (req, res, next) => {
         const user = await getUserByUsername(username);
 
         if (user && user.password == password) {
-            const token = jwt.sign({ id: 1, username: 'albert' }, process.env.JWT_SECRET);
+            const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET);
             console.log(token);
 
 
@@ -54,27 +55,28 @@ usersRouter.post('/login', async (req, res, next) => {
     }
 });
 
+//sets route for registering a user
 usersRouter.post('/register', async (req, res, next) => {
     const { username, password, name, location } = req.body;
 
     try {
         const _user = await getUserByUsername(username);
 
-        if (_user) {
+        if (_user) { //checks to see if username is already taken
             next({
                 name: 'UserExistsError',
                 message: 'A user by that username already exists'
             });
         }
 
-        const user = await createUser({
+        const user = await createUser({ //tries to create user with inputs
             username,
             password,
             name,
             location,
         });
 
-        const token = jwt.sign({
+        const token = jwt.sign({ //assigns token
             id: user.id,
             username
         }, process.env.JWT_SECRET, {
@@ -90,4 +92,5 @@ usersRouter.post('/register', async (req, res, next) => {
     }
 });
 
+//bouncer at the club that checks names on the list
 module.exports = usersRouter;
